@@ -1,9 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import plotly.graph_objects as go
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.patches import Rectangle
 from matplotlib.collections import PatchCollection
 from sklearn.linear_model import LinearRegression
+from plotly.subplots import make_subplots
 plt.style.use('fivethirtyeight')
 
 
@@ -86,52 +88,208 @@ def figure3(x_train, y_train, b, w):
     return fig, ax
 
 
+# def figure4(x_train, y_train, b, w, bs, ws, all_losses):
+#     b_minimum, w_minimum = fit_model(x_train, y_train)
+    
+    
+#     figure = plt.figure(figsize=(12, 6))
+
+#     # 1st plot
+#     ax1 = figure.add_subplot(1, 2, 1, projection='3d')
+#     ax1.set_xlabel('b')
+#     ax1.set_ylabel('w')
+#     ax1.set_title('Loss Surface')
+
+#     surf = ax1.plot_surface(bs, ws, all_losses, rstride=1, cstride=1, alpha=.5, cmap=plt.cm.jet, linewidth=0, antialiased=True)
+#     ax1.contour(bs[0, :], ws[:, 0], all_losses, 10, offset=-1, cmap=plt.cm.jet)
+
+
+#     bidx, widx, _, _ = find_index(b_minimum, w_minimum, bs, ws)
+#     ax1.scatter(b_minimum, w_minimum, all_losses[bidx, widx], c='k')
+#     ax1.text(-.3, 2.5, all_losses[bidx, widx], 'Minimum', zdir=(1, 0, 0))
+#     # Random start
+#     bidx, widx, _, _ = find_index(b, w, bs, ws)
+#     ax1.scatter(b, w, all_losses[bidx, widx], c='k')
+#     # Annotations
+#     ax1.text(-.2, -1.5, all_losses[bidx, widx], 'Random\n Start', zdir=(1, 0, 0))
+
+#     ax1.view_init(40, 260)
+    
+#     # 2nd plot
+#     ax2 = figure.add_subplot(1, 2, 2)
+#     ax2.set_xlabel('b')
+#     ax2.set_ylabel('w')
+#     ax2.set_title('Loss Surface')
+
+#     # Loss surface
+#     CS = ax2.contour(bs[0, :], ws[:, 0], all_losses, cmap=plt.cm.jet)
+#     ax2.clabel(CS, inline=1, fontsize=10)
+#     # Minimum
+#     ax2.scatter(b_minimum, w_minimum, c='k')
+#     # Random start
+#     ax2.scatter(b, w, c='k')
+#     # Annotations
+#     ax2.annotate('Random Start', xy=(-.2, 0.05), c='k')
+#     ax2.annotate('Minimum', xy=(.5, 2.2), c='k')   
+    
+#     figure.tight_layout()
+#     return figure, (ax1, ax2)
+
 def figure4(x_train, y_train, b, w, bs, ws, all_losses):
     b_minimum, w_minimum = fit_model(x_train, y_train)
     
+    # 创建包含两个子图的图形
+    fig = make_subplots(
+        # rows=2, cols=1,
+        rows=1, cols=2,
+        column_widths=[0.6, 0.4],
+        # specs=[[{'type': 'scene'}], [{'type': 'xy'}]],
+        specs=[[{'type': 'scene'}, {'type': 'xy'}]],
+        subplot_titles=('Loss Surface 3D', 'Loss Surface Contour'),
+        # vertical_spacing=0.1  # 调整垂直间距
+    )
     
-    figure = plt.figure(figsize=(12, 6))
-
-    # 1st plot
-    ax1 = figure.add_subplot(1, 2, 1, projection='3d')
-    ax1.set_xlabel('b')
-    ax1.set_ylabel('w')
-    ax1.set_title('Loss Surface')
-
-    surf = ax1.plot_surface(bs, ws, all_losses, rstride=1, cstride=1, alpha=.5, cmap=plt.cm.jet, linewidth=0, antialiased=True)
-    ax1.contour(bs[0, :], ws[:, 0], all_losses, 10, offset=-1, cmap=plt.cm.jet)
-
-
-    bidx, widx, _, _ = find_index(b_minimum, w_minimum, bs, ws)
-    ax1.scatter(b_minimum, w_minimum, all_losses[bidx, widx], c='k')
-    ax1.text(-.3, 2.5, all_losses[bidx, widx], 'Minimum', zdir=(1, 0, 0))
-    # Random start
-    bidx, widx, _, _ = find_index(b, w, bs, ws)
-    ax1.scatter(b, w, all_losses[bidx, widx], c='k')
-    # Annotations
-    ax1.text(-.2, -1.5, all_losses[bidx, widx], 'Random\n Start', zdir=(1, 0, 0))
-
-    ax1.view_init(40, 260)
+    # 找到最小值和随机起点的索引
+    bidx_min, widx_min, _, _ = find_index(b_minimum, w_minimum, bs, ws)
+    bidx_start, widx_start, _, _ = find_index(b, w, bs, ws)
     
-    # 2nd plot
-    ax2 = figure.add_subplot(1, 2, 2)
-    ax2.set_xlabel('b')
-    ax2.set_ylabel('w')
-    ax2.set_title('Loss Surface')
-
-    # Loss surface
-    CS = ax2.contour(bs[0, :], ws[:, 0], all_losses, cmap=plt.cm.jet)
-    ax2.clabel(CS, inline=1, fontsize=10)
-    # Minimum
-    ax2.scatter(b_minimum, w_minimum, c='k')
-    # Random start
-    ax2.scatter(b, w, c='k')
-    # Annotations
-    ax2.annotate('Random Start', xy=(-.2, 0.05), c='k')
-    ax2.annotate('Minimum', xy=(.5, 2.2), c='k')   
+    # 1. 3D 曲面图
+    fig.add_trace(
+        go.Surface(
+            x=bs[0, :],
+            y=ws[:, 0],
+            z=all_losses,
+            # colorscale='Viridis',  # 改为Viridis色系
+            colorscale='Jet',
+            opacity=0.7,
+            showscale=False,
+            # 分别设置x、y、z方向的等高线
+            contours_x=dict(
+                show=True, 
+                usecolormap=True,
+                highlightcolor='red',  # 设置等高线颜色
+                highlightwidth=4,       # 设置等高线宽度
+                # highlight=False  # 禁用交互时的高亮效果:cite[3]
+            ),
+            contours_y=dict(
+                show=True,
+                usecolormap=True,
+                highlightcolor='red',  # 设置等高线颜色
+                highlightwidth=4,       # 设置等高线宽度
+                # highlight=False
+            ),
+            contours_z=dict(
+                show=True,
+                usecolormap=True,
+                highlightcolor='red',  # 设置等高线颜色
+                highlightwidth=4,       # 设置等高线宽度
+                # highlight=False
+                project_z=True,
+            ),
+        ),
+        row=1, col=1
+    )
     
-    figure.tight_layout()
-    return figure, (ax1, ax2)
+    # 添加最小值点
+    fig.add_trace(
+        go.Scatter3d(
+            x=[b_minimum],
+            y=[w_minimum],
+            z=[all_losses[bidx_min, widx_min]],
+            mode='markers+text',
+            marker=dict(size=5, color='black'),
+            text=['Minimum'],
+            textposition='middle right',
+            name='Minimum'
+        ),
+        row=1, col=1
+    )
+    
+    # 添加随机起点
+    fig.add_trace(
+        go.Scatter3d(
+            x=[b],
+            y=[w],
+            z=[all_losses[bidx_start, widx_start]],
+            mode='markers+text',
+            marker=dict(size=5, color='black'),
+            text=['Random Start'],
+            textposition='middle right',
+            name='Random Start'
+        ),
+        row=1, col=1
+    )
+    
+    # 设置3D图的视角
+    fig.update_scenes(
+        xaxis_title='b',
+        yaxis_title='w',
+        zaxis_title='Loss',
+        aspectmode='manual',
+        aspectratio=dict(x=1, y=1, z=0.7),
+        row=1, col=1
+    )
+    
+    # 2. 等高线图
+    fig.add_trace(
+        go.Contour(
+            x=bs[0, :],
+            y=ws[:, 0],
+            z=all_losses,
+            colorscale='Jet',
+            # colorscale='Viridis',  # 改为Viridis色系
+            contours=dict(
+                showlabels=True,
+                labelfont=dict(size=10, color='black'),
+                coloring='lines',  # 只有线条上色，不填充
+            ),
+            line=dict(width=4),
+            colorbar=dict(title='Loss')
+        ),
+        row=1, col=2
+    )
+    
+    # 添加最小值点
+    fig.add_trace(
+        go.Scatter(
+            x=[b_minimum],
+            y=[w_minimum],
+            mode='markers+text',
+            marker=dict(size=10, color='black'),
+            text=['Minimum'],
+            textposition='top right',
+            showlegend=False
+        ),
+        row=1, col=2
+    )
+    
+    # 添加随机起点
+    fig.add_trace(
+        go.Scatter(
+            x=[b],
+            y=[w],
+            mode='markers+text',
+            marker=dict(size=10, color='black'),
+            text=['Random Start'],
+            textposition='top right',
+            showlegend=False
+        ),
+        row=1, col=2
+    )
+    
+    # 更新布局
+    fig.update_layout(
+        height=700,
+        width=900,
+        # title_text="Loss Surface Visualization",
+        showlegend=False
+    )
+    
+    # 更新子图标题和轴标签
+    fig.update_xaxes(title_text="b", row=1, col=2)
+    fig.update_yaxes(title_text="w", row=1, col=2)
+    
+    return fig
 
 
 def figure5(x_train, y_train, b, w, bs, ws, all_losses):
