@@ -25,4 +25,4 @@ writer = SummaryWriter('runs/simple_linear_regression')
 
 # Fetches a single mini-batch so we can use add_graph
 x_sample, y_sample = next(iter(train_loader))
-writer.add_graph(model, x_sample.to(device))
+writer.add_graph(model, input_to_model=x_sample.to(device))

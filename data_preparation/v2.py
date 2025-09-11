@@ -2,14 +2,14 @@
 torch.manual_seed(13)
 
 # Builds tensors from numpy arrays BEFORE split
-x_tensor = torch.as_tensor(x).float()
-y_tensor = torch.as_tensor(y).float()
+x_tensor = torch.from_numpy(x).float()
+y_tensor = torch.from_numpy(y).float()
 
 # Builds dataset containing ALL data points
 dataset = TensorDataset(x_tensor, y_tensor)
 
 # Performs the split
-ratio = .8
+ratio = 0.8
 n_total = len(dataset)
 n_train = int(n_total * ratio)
 n_val = n_total - n_train

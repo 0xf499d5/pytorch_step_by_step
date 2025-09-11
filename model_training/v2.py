@@ -22,5 +22,5 @@ for epoch in range(n_epochs):
 
     # Computes average loss over all mini-batches - that's the epoch loss
     loss = np.mean(mini_batch_losses)
-    
+
     losses.append(loss)
