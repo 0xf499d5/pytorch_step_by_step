@@ -3,10 +3,16 @@ class MultiHeadAttention(nn.Module):
     def __init__(self, n_heads, d_model, input_dim=None, proj_values=True):
         super().__init__()
         self.linear_out = nn.Linear(n_heads * d_model, d_model)
-        self.attn_heads = nn.ModuleList([Attention(d_model, 
-                                                   input_dim=input_dim, 
-                                                   proj_values=proj_values) 
-                                         for _ in range(n_heads)])
+        self.attn_heads = nn.ModuleList(
+            [
+                Attention(
+                    d_model, # it means hidden_dim in Attention Class
+                    input_dim=input_dim, 
+                    proj_values=proj_values
+                ) 
+                for _ in range(n_heads)
+            ]
+        )
 
     def init_keys(self, key):
         for attn in self.attn_heads:
