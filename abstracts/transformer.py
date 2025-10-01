@@ -374,9 +374,12 @@ class MultiHeadAttention(nn.Module):
         # q = q.transpose(1, 2)  # (B, N, S, H)
         q = self.wq(x).view(B, S, self.n_heads, self.head_dim).transpose(1, 2).contiguous()
 
-        if self.k is None and self.v is None:
-            self.init_kv(x)
-        k, v = self.k, self.v
+        # When using KV caching, you must be extremely careful
+        if self.k is not None and self.v is not None:
+            k, v = self.k, self.v
+        else:
+            k = self.wk(x).view(B, S, self.n_heads, self.head_dim).transpose(1, 2).contiguous()
+            v = self.wv(x).view(B, S, self.n_heads, self.head_dim).transpose(1, 2).contiguous()
 
         a = q @ k.transpose(2, 3)
         a /= np.sqrt(self.input_dim)
